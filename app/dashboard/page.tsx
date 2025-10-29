@@ -177,12 +177,20 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-gray-900">Credential Manager</h1>
             {user && <p className="text-sm text-gray-600">Welcome, {user.username}</p>}
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-          >
-            Logout
-          </button>
+          <div className="flex gap-4">
+            <a href="/databricks" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+              Databricks
+            </a>
+            <a href="/jobs" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+              Jobs
+            </a>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 

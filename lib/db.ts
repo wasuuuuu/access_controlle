@@ -52,11 +52,68 @@ function initializeDatabase(database: Database.Database) {
     )
   `);
 
+  // Create databricks_connections table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS databricks_connections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      connection_name TEXT NOT NULL,
+      databricks_host TEXT NOT NULL,
+      databricks_token_encrypted TEXT NOT NULL,
+      warehouse_id TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create scheduled_jobs table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS scheduled_jobs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      job_name TEXT NOT NULL,
+      job_type TEXT NOT NULL,
+      databricks_connection_id INTEGER NOT NULL,
+      oracle_credential_id INTEGER NOT NULL,
+      source_table TEXT NOT NULL,
+      target_table TEXT NOT NULL,
+      schedule_cron TEXT NOT NULL,
+      is_active INTEGER DEFAULT 1,
+      last_run DATETIME,
+      last_status TEXT,
+      last_error TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+      FOREIGN KEY (databricks_connection_id) REFERENCES databricks_connections (id) ON DELETE CASCADE,
+      FOREIGN KEY (oracle_credential_id) REFERENCES credentials (id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create job_logs table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS job_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_id INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME,
+      rows_processed INTEGER,
+      error_message TEXT,
+      FOREIGN KEY (job_id) REFERENCES scheduled_jobs (id) ON DELETE CASCADE
+    )
+  `);
+
   // Create index for faster queries
   database.exec(`
     CREATE INDEX IF NOT EXISTS idx_credentials_user_id ON credentials(user_id);
     CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    CREATE INDEX IF NOT EXISTS idx_databricks_connections_user_id ON databricks_connections(user_id);
+    CREATE INDEX IF NOT EXISTS idx_scheduled_jobs_user_id ON scheduled_jobs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_job_logs_job_id ON job_logs(job_id);
   `);
 }
 
@@ -90,4 +147,44 @@ export interface Credential {
   additional_info?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface DatabricksConnection {
+  id: number;
+  user_id: number;
+  connection_name: string;
+  databricks_host: string;
+  databricks_token_encrypted: string;
+  warehouse_id?: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScheduledJob {
+  id: number;
+  user_id: number;
+  job_name: string;
+  job_type: string;
+  databricks_connection_id: number;
+  oracle_credential_id: number;
+  source_table: string;
+  target_table: string;
+  schedule_cron: string;
+  is_active: number;
+  last_run?: string;
+  last_status?: string;
+  last_error?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobLog {
+  id: number;
+  job_id: number;
+  status: string;
+  started_at: string;
+  completed_at?: string;
+  rows_processed?: number;
+  error_message?: string;
 }

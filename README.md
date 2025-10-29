@@ -1,9 +1,10 @@
-# Credential Manager
+# Credential Manager with Databricks to MDM Scheduler
 
-A secure web application built with Next.js and SQLite for managing user credentials and Oracle MDM credentials.
+A secure web application built with Next.js, SQLite, and Python FastAPI for managing user credentials and automating data transfers from Databricks to Oracle MDM.
 
 ## Features
 
+### Core Features
 - User authentication (registration, login, logout)
 - Secure password hashing with bcrypt
 - JWT-based session management
@@ -12,37 +13,68 @@ A secure web application built with Next.js and SQLite for managing user credent
 - Support for multiple credential types (Oracle MDM, Database, API, SSH, etc.)
 - Modern, responsive UI with Tailwind CSS
 
+### Job Scheduling Features
+- **Databricks Integration**: Store and manage Databricks connection credentials
+- **Oracle MDM Integration**: Securely store Oracle database credentials
+- **Automated Job Scheduling**: Schedule data transfers using cron expressions
+- **Table Browser**: Browse and select tables from Databricks
+- **Job Types**:
+  - Create Table: Create a new table in Oracle MDM from Databricks table
+  - Insert Data: Insert data from Databricks into existing Oracle MDM table
+- **Job Monitoring**: View job execution history, status, and logs
+- **Manual Execution**: Run jobs on-demand outside of schedule
+- **APScheduler Integration**: Reliable Python-based job scheduling
+
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
+- **Backend API**: Next.js API Routes + Python FastAPI
+- **Job Scheduler**: Python APScheduler
 - **Database**: SQLite with better-sqlite3
 - **Authentication**: JWT tokens, bcrypt password hashing
 - **Encryption**: Node.js crypto module (AES-256-GCM)
+- **Databricks**: databricks-sql-connector Python SDK
+- **Oracle**: python-oracledb driver
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18 or higher
+- Python 3.8 or higher
 - npm or yarn
+- pip (Python package manager)
 
 ### Installation
 
 1. Clone the repository
-2. Install dependencies:
+
+2. Install Node.js dependencies:
 ```bash
 npm install
 ```
 
-3. The `.env.local` file is already configured with secure keys
+3. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-4. Run the development server:
+4. The `.env.local` file is already configured with secure keys
+
+5. Run the Next.js development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. In a separate terminal, run the Python FastAPI server:
+```bash
+cd python_backend
+python run.py
+```
+
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
+   - Next.js frontend runs on port 3000
+   - Python FastAPI backend runs on port 8000
 
 ## Usage
 
@@ -54,7 +86,7 @@ npm run dev
 
 ### Managing Credentials
 
-1. Click "Add Credential" to create a new credential entry
+1. From the dashboard, click "Add Credential" to create a new credential entry
 2. Fill in the required information:
    - Credential Name (e.g., "Production Oracle MDM")
    - Credential Type (Oracle MDM, Database, API, SSH, Other)
@@ -62,6 +94,50 @@ npm run dev
    - Optional: Host, Port, Database Name, Additional Info
 3. Click on any credential card to view details and copy credentials
 4. Delete credentials when no longer needed
+
+### Managing Databricks Connections
+
+1. Navigate to the **Databricks** page from the top navigation
+2. Click "Add Connection" to create a new Databricks connection
+3. Provide:
+   - Connection Name (e.g., "Production Databricks")
+   - Databricks Host (your workspace URL without https://)
+   - Personal Access Token (generate from Databricks workspace)
+   - SQL Warehouse ID (optional, found in SQL Warehouses section)
+4. Your token will be encrypted and stored securely
+5. Delete connections when no longer needed
+
+### Scheduling Jobs
+
+1. **Prepare Prerequisites**:
+   - Create at least one Databricks connection
+   - Create at least one Oracle MDM credential
+
+2. **Create a Scheduled Job**:
+   - Navigate to the **Jobs** page
+   - Click "Schedule Job"
+   - Fill in the job details:
+     - Job Name (e.g., "Daily Customer Sync")
+     - Job Type:
+       - **Insert Data**: Transfer data to existing Oracle table
+       - **Create Table & Insert**: Create table if doesn't exist, then insert
+     - Select Databricks Connection
+     - Select Oracle MDM Credential
+     - Source Table: Databricks table name (e.g., `catalog.schema.table` or `schema.table`)
+     - Target Table: Oracle table name (e.g., `CUSTOMERS`)
+     - Schedule: Cron expression (e.g., `0 2 * * *` for daily at 2 AM)
+
+3. **Cron Expression Format**: `minute hour day month day_of_week`
+   - `0 2 * * *` - Every day at 2:00 AM
+   - `0 */6 * * *` - Every 6 hours
+   - `0 0 * * 0` - Every Sunday at midnight
+   - `30 14 * * 1-5` - Weekdays at 2:30 PM
+
+4. **Monitor Jobs**:
+   - View job status and last execution time
+   - Check execution history and error logs
+   - Run jobs manually using "Run Now" button
+   - Disable/delete jobs as needed
 
 ### Security Features
 
@@ -108,20 +184,76 @@ npm run dev
 - created_at
 - updated_at
 
+### Databricks Connections Table
+- id (Primary Key)
+- user_id (Foreign Key)
+- connection_name
+- databricks_host
+- databricks_token_encrypted
+- warehouse_id
+- is_active
+- created_at
+- updated_at
+
+### Scheduled Jobs Table
+- id (Primary Key)
+- user_id (Foreign Key)
+- job_name
+- job_type (create_table | insert_data)
+- databricks_connection_id (Foreign Key)
+- oracle_credential_id (Foreign Key)
+- source_table
+- target_table
+- schedule_cron
+- is_active
+- last_run
+- last_status
+- last_error
+- created_at
+- updated_at
+
+### Job Logs Table
+- id (Primary Key)
+- job_id (Foreign Key)
+- status (running | success | error)
+- started_at
+- completed_at
+- rows_processed
+- error_message
+
 ## API Endpoints
 
-### Authentication
+### Authentication (Next.js API)
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/logout` - Logout user
 - `GET /api/auth/me` - Get current user
 
-### Credentials
+### Credentials (Next.js API)
 - `GET /api/credentials` - List all user credentials
 - `POST /api/credentials` - Create new credential
 - `GET /api/credentials/[id]` - Get specific credential (with decrypted password)
 - `PUT /api/credentials/[id]` - Update credential
 - `DELETE /api/credentials/[id]` - Delete credential
+
+### Databricks Connections (Next.js API)
+- `GET /api/databricks/connections` - List all Databricks connections
+- `POST /api/databricks/connections` - Create new connection
+- `DELETE /api/databricks/connections/[id]` - Delete connection
+
+### Databricks Operations (Python FastAPI - Port 8000)
+- `GET /api/databricks/tables?connection_id={id}` - List tables from Databricks
+- `GET /api/databricks/tables/{table_name}/schema?connection_id={id}` - Get table schema
+- `GET /api/databricks/test-connection?connection_id={id}` - Test connection
+
+### Job Scheduling (Python FastAPI - Port 8000)
+- `GET /api/jobs/` - List all scheduled jobs
+- `POST /api/jobs/` - Create new scheduled job
+- `GET /api/jobs/{id}` - Get specific job details
+- `PUT /api/jobs/{id}` - Update job configuration
+- `DELETE /api/jobs/{id}` - Delete job
+- `POST /api/jobs/{id}/run` - Run job immediately
+- `GET /api/jobs/{id}/logs` - Get job execution logs
 
 ## Production Deployment
 
