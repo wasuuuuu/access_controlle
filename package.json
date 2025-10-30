@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backend": "cd python_backend && python run.py",
+    "dev:all": "concurrently \"npm run dev\" \"npm run backend\"",
+    "postinstall": "echo \"✓ Node.js dependencies installed. Run 'pip install -r requirements.txt' to install Python dependencies.\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -25,6 +28,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.2",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",

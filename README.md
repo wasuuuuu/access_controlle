@@ -45,6 +45,11 @@ A secure web application built with Next.js, SQLite, and Python FastAPI for mana
 - npm or yarn
 - pip (Python package manager)
 
+**For Windows users:**
+- Ensure Python is added to PATH during installation
+- Use PowerShell or Command Prompt (CMD)
+- Git Bash is also supported for Unix-like commands
+
 ### Installation
 
 1. Clone the repository
@@ -63,21 +68,48 @@ pip install -r requirements.txt
 
 5. Run both servers:
 
-**Option 1: Using the convenience script (recommended)**
+**Option 1: Using npm script (Cross-platform, recommended)**
+```bash
+npm run dev:all
+```
+This works on all platforms (Windows, Linux, macOS) and runs both servers concurrently.
+
+**Option 2: Using platform-specific scripts**
+
+**Linux/macOS:**
 ```bash
 ./start.sh
 ```
-This will start both Next.js and Python servers concurrently.
 
-**Option 2: Manually in separate terminals**
+**Windows (PowerShell):**
+```powershell
+.\start.ps1
+```
 
-Terminal 1 - Next.js:
+**Windows (Command Prompt):**
+```cmd
+start.bat
+```
+
+These scripts will automatically start both Next.js and Python servers.
+
+**Option 3: Manually in separate terminals**
+
+**Terminal 1 - Next.js:**
 ```bash
 npm run dev
 ```
 
-Terminal 2 - Python FastAPI:
+**Terminal 2 - Python FastAPI:**
+
+Linux/macOS:
 ```bash
+cd python_backend
+python run.py
+```
+
+Windows:
+```cmd
 cd python_backend
 python run.py
 ```
@@ -297,12 +329,19 @@ npm start
 ### Commands
 
 ```bash
-npm run dev     # Start Next.js development server
-npm run build   # Build for production
-npm run start   # Start production server
-npm run lint    # Run ESLint
-./start.sh      # Start both Next.js and Python servers
+npm run dev        # Start Next.js development server only
+npm run backend    # Start Python FastAPI backend only
+npm run dev:all    # Start both servers (cross-platform)
+npm run build      # Build for production
+npm run start      # Start production server
+npm run lint       # Run ESLint
 ```
+
+**Start both servers (alternative methods):**
+- Cross-platform: `npm run dev:all`
+- Linux/macOS: `./start.sh`
+- Windows PowerShell: `.\start.ps1`
+- Windows CMD: `start.bat`
 
 ### Technology Stack & Best Practices
 
@@ -325,6 +364,62 @@ npm run lint    # Run ESLint
 - `/lib` - Shared utilities (auth, database, middleware)
 - `/python_backend` - FastAPI server for job scheduling
 - SQLite database stored in `/data` (auto-created, gitignored)
+
+**Cross-Platform Compatibility**
+- All Python code uses `pathlib.Path` for cross-platform file paths
+- Works on Windows, Linux, and macOS
+- Scripts provided for all platforms (`.sh`, `.bat`, `.ps1`)
+- No Unix-specific dependencies required
+
+## Windows-Specific Notes
+
+### Running on Windows
+
+The application is fully compatible with Windows. You have three options:
+
+1. **PowerShell (Recommended)**
+   ```powershell
+   .\start.ps1
+   ```
+   - More modern and feature-rich
+   - Better error handling
+   - Shows process IDs
+
+2. **Command Prompt (CMD)**
+   ```cmd
+   start.bat
+   ```
+   - Opens servers in separate windows
+   - Traditional Windows batch script
+
+3. **Git Bash / WSL**
+   ```bash
+   ./start.sh
+   ```
+   - Unix-like environment on Windows
+   - Same experience as Linux/macOS
+
+### Troubleshooting on Windows
+
+**Python not found:**
+- Ensure Python is installed and added to PATH
+- Test with: `python --version`
+- If needed, use `py` instead of `python`
+
+**Permission errors with PowerShell:**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**Port already in use:**
+- Stop any existing Node.js or Python processes
+- Check with: `netstat -ano | findstr :3000` and `netstat -ano | findstr :8000`
+- Kill process: `taskkill /PID <PID> /F`
+
+**SQLite database issues:**
+- The database file is created automatically in `/data`
+- Ensure the application has write permissions
+- Path: `C:\path\to\project\data\database.db`
 
 ## License
 
