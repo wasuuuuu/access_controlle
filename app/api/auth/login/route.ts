@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, User } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/auth';
+import { logAuth } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,9 @@ export async function POST(request: NextRequest) {
     ).get(username, username) as User | undefined;
 
     if (!user) {
+      // Log failed login attempt
+      await logAuth('login_failed', username, undefined, request, { reason: 'user_not_found' });
+
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -32,6 +36,9 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValid = await verifyPassword(password, user.password_hash);
     if (!isValid) {
+      // Log failed login attempt
+      await logAuth('login_failed', user.username, user.id, request, { reason: 'invalid_password' });
+
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -44,6 +51,9 @@ export async function POST(request: NextRequest) {
       username: user.username,
       email: user.email
     });
+
+    // Log successful login
+    await logAuth('login', user.username, user.id, request);
 
     const response = NextResponse.json({
       success: true,

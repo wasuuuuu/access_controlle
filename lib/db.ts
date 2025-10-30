@@ -106,6 +106,24 @@ function initializeDatabase(database: Database.Database) {
     )
   `);
 
+  // Create audit_logs table for tracking user actions
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      username TEXT,
+      action TEXT NOT NULL,
+      resource_type TEXT,
+      resource_id INTEGER,
+      status TEXT NOT NULL,
+      ip_address TEXT,
+      user_agent TEXT,
+      details TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+    )
+  `);
+
   // Create index for faster queries
   database.exec(`
     CREATE INDEX IF NOT EXISTS idx_credentials_user_id ON credentials(user_id);
@@ -114,6 +132,9 @@ function initializeDatabase(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_databricks_connections_user_id ON databricks_connections(user_id);
     CREATE INDEX IF NOT EXISTS idx_scheduled_jobs_user_id ON scheduled_jobs(user_id);
     CREATE INDEX IF NOT EXISTS idx_job_logs_job_id ON job_logs(job_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
   `);
 }
 
@@ -187,4 +208,18 @@ export interface JobLog {
   completed_at?: string;
   rows_processed?: number;
   error_message?: string;
+}
+
+export interface AuditLog {
+  id: number;
+  user_id?: number;
+  username?: string;
+  action: string;
+  resource_type?: string;
+  resource_id?: number;
+  status: string;
+  ip_address?: string;
+  user_agent?: string;
+  details?: string;
+  created_at: string;
 }
