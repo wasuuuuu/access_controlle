@@ -61,20 +61,31 @@ pip install -r requirements.txt
 
 4. The `.env.local` file is already configured with secure keys
 
-5. Run the Next.js development server:
+5. Run both servers:
+
+**Option 1: Using the convenience script (recommended)**
+```bash
+./start.sh
+```
+This will start both Next.js and Python servers concurrently.
+
+**Option 2: Manually in separate terminals**
+
+Terminal 1 - Next.js:
 ```bash
 npm run dev
 ```
 
-6. In a separate terminal, run the Python FastAPI server:
+Terminal 2 - Python FastAPI:
 ```bash
 cd python_backend
 python run.py
 ```
 
-7. Open [http://localhost:3000](http://localhost:3000) in your browser
-   - Next.js frontend runs on port 3000
-   - Python FastAPI backend runs on port 8000
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+   - Next.js frontend: http://localhost:3000
+   - Python FastAPI backend: http://localhost:8000
+   - FastAPI interactive docs: http://localhost:8000/docs
 
 ## Usage
 
@@ -283,12 +294,37 @@ npm start
 
 ## Development
 
+### Commands
+
 ```bash
-npm run dev     # Start development server
+npm run dev     # Start Next.js development server
 npm run build   # Build for production
 npm run start   # Start production server
 npm run lint    # Run ESLint
+./start.sh      # Start both Next.js and Python servers
 ```
+
+### Technology Stack & Best Practices
+
+**Next.js 16 App Router**
+- Uses the modern App Router (not Pages Router)
+- Client components marked with `'use client'` directive
+- Server components by default for better performance
+- Navigation uses `next/link` Link component and `next/navigation` useRouter
+- All navigation is done via `<Link>` components for optimal performance
+- Dynamic routes use `[param]` folder structure
+
+**Dependencies**
+- All dependencies are kept up-to-date with latest stable versions
+- Python dependencies specified in `requirements.txt`
+- Node.js dependencies in `package.json`
+- Run `npm update` and `pip install -U -r requirements.txt` periodically
+
+**Code Structure**
+- `/app` - Next.js App Router pages and layouts
+- `/lib` - Shared utilities (auth, database, middleware)
+- `/python_backend` - FastAPI server for job scheduling
+- SQLite database stored in `/data` (auto-created, gitignored)
 
 ## License
 

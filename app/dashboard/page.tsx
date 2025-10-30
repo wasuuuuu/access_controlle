@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface User {
   id: number;
@@ -178,12 +179,12 @@ export default function DashboardPage() {
             {user && <p className="text-sm text-gray-600">Welcome, {user.username}</p>}
           </div>
           <div className="flex gap-4">
-            <a href="/databricks" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            <Link href="/databricks" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
               Databricks
-            </a>
-            <a href="/jobs" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            </Link>
+            <Link href="/jobs" className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
               Jobs
-            </a>
+            </Link>
             <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
