@@ -38,6 +38,26 @@ A secure web application built with Next.js, SQLite, and Python FastAPI for mana
 
 ## Getting Started
 
+### ⚠️ Windows Users: Having Installation Issues?
+
+If you're getting `gyp ERR!` or `cannot find Visual Studio` errors on Windows:
+
+**Automated Fix (Recommended):**
+```bash
+# Run the automated fix script
+fix-windows.bat
+
+# Or PowerShell version
+.\fix-windows.ps1
+```
+
+**Manual Fix:**
+```bash
+npm install --force
+```
+
+📖 **See [WINDOWS_INSTALL.md](WINDOWS_INSTALL.md) for complete Windows installation guide.**
+
 ### Prerequisites
 
 - Node.js 18 or higher
@@ -49,6 +69,47 @@ A secure web application built with Next.js, SQLite, and Python FastAPI for mana
 - Ensure Python is added to PATH during installation
 - Use PowerShell or Command Prompt (CMD)
 - Git Bash is also supported for Unix-like commands
+- **Build tools required** for native modules (see Windows Installation below)
+
+### Windows Installation (Important!)
+
+This application uses `better-sqlite3`, a native Node.js module that requires compilation on Windows.
+
+**Option 1: Install Windows Build Tools (Recommended)**
+
+Open PowerShell **as Administrator** and run:
+```powershell
+npm install --global windows-build-tools
+```
+
+This installs Python 2.7 and Visual Studio Build Tools automatically.
+
+**Option 2: Install Visual Studio Build Tools Manually**
+
+1. Download [Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+2. Install with "Desktop development with C++" workload
+3. Restart your computer
+
+**Option 3: Use Prebuilt Binaries (Fastest, No Build Tools Needed)**
+
+```bash
+npm install --force
+```
+
+This will download precompiled binaries instead of building from source.
+
+**If you still get errors:**
+
+```bash
+# Set Visual Studio version
+npm config set msvs_version 2022
+
+# Set Python path (adjust to your Python installation)
+npm config set python "C:\Python311\python.exe"
+
+# Then install
+npm install
+```
 
 ### Installation
 
@@ -401,10 +462,42 @@ The application is fully compatible with Windows. You have three options:
 
 ### Troubleshooting on Windows
 
+**`gyp ERR!` or `cannot find Visual Studio` errors:**
+
+This occurs when installing `better-sqlite3` without build tools.
+
+**Quick Fix:**
+```bash
+npm install --force
+```
+This uses prebuilt binaries instead of compiling.
+
+**Permanent Fix:**
+```powershell
+# Run as Administrator
+npm install --global windows-build-tools
+
+# Then try again
+npm install
+```
+
+**Alternative: Install Visual Studio Build Tools**
+1. Download from [Microsoft](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+2. Install with "Desktop development with C++" workload
+3. Restart computer and run `npm install`
+
+**`cannot find module 'deep-extend'` error:**
+```bash
+# Clean install
+rm -rf node_modules package-lock.json
+npm install --force
+```
+
 **Python not found:**
 - Ensure Python is installed and added to PATH
 - Test with: `python --version`
 - If needed, use `py` instead of `python`
+- Set Python path: `npm config set python "C:\Python311\python.exe"`
 
 **Permission errors with PowerShell:**
 ```powershell
@@ -420,6 +513,11 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - The database file is created automatically in `/data`
 - Ensure the application has write permissions
 - Path: `C:\path\to\project\data\database.db`
+
+**Node.js version issues:**
+- Ensure you're using Node.js 18 or higher
+- Check with: `node --version`
+- Download latest LTS from [nodejs.org](https://nodejs.org/)
 
 ## License
 
